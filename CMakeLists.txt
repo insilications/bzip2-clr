@@ -304,18 +304,18 @@ endif()
 
 if(ENABLE_STATIC_LIB)
     # The libbz2 static library.
-    add_library(bz2_static STATIC)
-    target_sources(bz2_static
+    add_library(bz2 STATIC)
+    target_sources(bz2
         PRIVATE     ${BZ2_SOURCES}
         PUBLIC      ${CMAKE_CURRENT_SOURCE_DIR}/bzlib_private.h
         INTERFACE   ${CMAKE_CURRENT_SOURCE_DIR}/bzlib.h)
-    set_target_properties(bz2_static PROPERTIES
+    set_target_properties(bz2 PROPERTIES
         COMPILE_FLAGS       "${WARNCFLAGS}"
         VERSION             ${LT_VERSION}
         SOVERSION           ${LT_SOVERSION}
-        ARCHIVE_OUTPUT_NAME bz2_static)
-    target_compile_definitions(bz2_static PUBLIC BZ2_STATICLIB)
-    install(TARGETS bz2_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        ARCHIVE_OUTPUT_NAME bz2)
+    target_compile_definitions(bz2 PUBLIC BZ2)
+    install(TARGETS bz2 DESTINATION ${CMAKE_INSTALL_LIBDIR})
     install(FILES bzlib.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
     if(ENABLE_APP)
         # The bzip2 executable.
@@ -323,7 +323,7 @@ if(ENABLE_STATIC_LIB)
         target_sources(bzip2
             PRIVATE   bzip2.c)
         target_link_libraries(bzip2
-            PRIVATE   bz2_static)
+            PRIVATE   bz2)
         if(WIN32)
             target_compile_definitions(bzip2 PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
         else()
@@ -341,7 +341,7 @@ if(ENABLE_STATIC_LIB)
         target_sources(bzip2recover
             PRIVATE   bzip2recover.c)
         target_link_libraries(bzip2recover
-            PRIVATE bz2_static)
+            PRIVATE bz2)
         if(WIN32)
             target_compile_definitions(bzip2recover PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
         else()
