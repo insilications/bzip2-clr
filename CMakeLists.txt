@@ -220,13 +220,6 @@ set(BZ2_SOURCES
     decompress.c
     bzlib.c)
 
-# The bz2 OBJECT-library, required for bzip2, bzip2recover.
-add_library(bz2_ObjLib OBJECT)
-target_sources(bz2_ObjLib
-    PRIVATE   ${BZ2_SOURCES}
-    PUBLIC    ${CMAKE_CURRENT_SOURCE_DIR}/bzlib_private.h
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/bzlib.h)
-
 # Windows resource file
 set(BZ2_RES "")
 if(WIN32)
@@ -251,6 +244,62 @@ if(ENABLE_SHARED_LIB)
         VERSION ${LT_VERSION} SOVERSION ${LT_SOVERSION})
     install(TARGETS bz2 DESTINATION ${CMAKE_INSTALL_LIBDIR})
     install(FILES bzlib.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    if(ENABLE_APP)
+        # The bzip2 executable.
+        add_executable(bzip2)
+        target_sources(bzip2
+            PRIVATE   bzip2.c)
+        target_link_libraries(bzip2
+            PRIVATE   bz2)
+        if(WIN32)
+            target_compile_definitions(bzip2 PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
+        else()
+            target_compile_definitions(bzip2 PUBLIC BZ_LCCWIN32=0 BZ_UNIX)
+        endif()
+        install(TARGETS bzip2 DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+        # Create bzip2 copies bzcat and bunzip.
+        # The default behavior is altered in bzip2.c code by checking the program name.
+        install_target_symlink(bzip2 bzcat)
+        install_target_symlink(bzip2 bunzip)
+
+        # The bzip2recover executable.
+        add_executable(bzip2recover)
+        target_sources(bzip2recover
+            PRIVATE   bzip2recover.c)
+        target_link_libraries(bzip2recover
+            PRIVATE bz2)
+        if(WIN32)
+            target_compile_definitions(bzip2recover PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
+        else()
+            target_compile_definitions(bzip2recover PUBLIC BZ_LCCWIN32=0 BZ_UNIX)
+        endif()
+        install(TARGETS bzip2recover DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+        if(ENABLE_EXAMPLES)
+            if(ENABLE_SHARED_LIB)
+                # The dlltest executable.
+                add_executable(dlltest)
+                target_sources(dlltest
+                    PRIVATE   dlltest.c)
+                target_link_libraries(dlltest bz2)
+                install(TARGETS dlltest DESTINATION ${CMAKE_INSTALL_BINDIR})
+            endif()
+        endif()
+
+        if(NOT WIN32)
+            # Install shell scripts, and renamed copies.
+            install(PROGRAMS bzdiff bzgrep bzmore
+                DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+            install_script_symlink(bzdiff bzcmp)
+
+            install_script_symlink(bzgrep bzegrep)
+            install_script_symlink(bzgrep bzfgrep)
+
+            install_script_symlink(bzmore bzless)
+        endif()
+    endif()
 endif()
 
 if(ENABLE_STATIC_LIB)
@@ -268,64 +317,62 @@ if(ENABLE_STATIC_LIB)
     target_compile_definitions(bz2_static PUBLIC BZ2_STATICLIB)
     install(TARGETS bz2_static DESTINATION ${CMAKE_INSTALL_LIBDIR})
     install(FILES bzlib.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endif()
+    if(ENABLE_APP)
+        # The bzip2 executable.
+        add_executable(bzip2)
+        target_sources(bzip2
+            PRIVATE   bzip2.c)
+        target_link_libraries(bzip2
+            PRIVATE   bz2_static)
+        if(WIN32)
+            target_compile_definitions(bzip2 PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
+        else()
+            target_compile_definitions(bzip2 PUBLIC BZ_LCCWIN32=0 BZ_UNIX)
+        endif()
+        install(TARGETS bzip2 DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-if(ENABLE_APP)
-    # The bzip2 executable.
-    add_executable(bzip2)
-    target_sources(bzip2
-        PRIVATE   bzip2.c)
-    target_link_libraries(bzip2
-        PRIVATE   bz2_ObjLib)
-    if(WIN32)
-        target_compile_definitions(bzip2 PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
-    else()
-        target_compile_definitions(bzip2 PUBLIC BZ_LCCWIN32=0 BZ_UNIX)
-    endif()
-    install(TARGETS bzip2 DESTINATION ${CMAKE_INSTALL_BINDIR})
+        # Create bzip2 copies bzcat and bunzip.
+        # The default behavior is altered in bzip2.c code by checking the program name.
+        install_target_symlink(bzip2 bzcat)
+        install_target_symlink(bzip2 bunzip)
 
-    # Create bzip2 copies bzcat and bunzip.
-    # The default behavior is altered in bzip2.c code by checking the program name.
-    install_target_symlink(bzip2 bzcat)
-    install_target_symlink(bzip2 bunzip)
+        # The bzip2recover executable.
+        add_executable(bzip2recover)
+        target_sources(bzip2recover
+            PRIVATE   bzip2recover.c)
+        target_link_libraries(bzip2recover
+            PRIVATE bz2_static)
+        if(WIN32)
+            target_compile_definitions(bzip2recover PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
+        else()
+            target_compile_definitions(bzip2recover PUBLIC BZ_LCCWIN32=0 BZ_UNIX)
+        endif()
+        install(TARGETS bzip2recover DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-    # The bzip2recover executable.
-    add_executable(bzip2recover)
-    target_sources(bzip2recover
-        PRIVATE   bzip2recover.c)
-    target_link_libraries(bzip2recover
-        PRIVATE bz2_ObjLib)
-    if(WIN32)
-        target_compile_definitions(bzip2recover PUBLIC BZ_LCCWIN32 BZ_UNIX=0)
-    else()
-        target_compile_definitions(bzip2recover PUBLIC BZ_LCCWIN32=0 BZ_UNIX)
-    endif()
-    install(TARGETS bzip2recover DESTINATION ${CMAKE_INSTALL_BINDIR})
+        if(ENABLE_EXAMPLES)
+            if(ENABLE_SHARED_LIB)
+                # The dlltest executable.
+                add_executable(dlltest)
+                target_sources(dlltest
+                    PRIVATE   dlltest.c)
+                target_link_libraries(dlltest bz2)
+                install(TARGETS dlltest DESTINATION ${CMAKE_INSTALL_BINDIR})
+            endif()
+        endif()
 
-    if(ENABLE_EXAMPLES)
-        if(ENABLE_SHARED_LIB)
-            # The dlltest executable.
-            add_executable(dlltest)
-            target_sources(dlltest
-                PRIVATE   dlltest.c)
-            target_link_libraries(dlltest bz2)
-            install(TARGETS dlltest DESTINATION ${CMAKE_INSTALL_BINDIR})
+        if(NOT WIN32)
+            # Install shell scripts, and renamed copies.
+            install(PROGRAMS bzdiff bzgrep bzmore
+                DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+            install_script_symlink(bzdiff bzcmp)
+
+            install_script_symlink(bzgrep bzegrep)
+            install_script_symlink(bzgrep bzfgrep)
+
+            install_script_symlink(bzmore bzless)
         endif()
     endif()
-
-    if(NOT WIN32)
-        # Install shell scripts, and renamed copies.
-        install(PROGRAMS bzdiff bzgrep bzmore
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-        install_script_symlink(bzdiff bzcmp)
-
-        install_script_symlink(bzgrep bzegrep)
-        install_script_symlink(bzgrep bzfgrep)
-
-        install_script_symlink(bzmore bzless)
-    endif()
-
 endif()
 
 if(Python3_FOUND)
