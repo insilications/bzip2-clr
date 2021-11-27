@@ -915,10 +915,7 @@ void copyFileName ( Char* to, Char* from )
 static
 Bool fileExists ( Char* name )
 {
-   FILE *tmp   = fopen ( name, "rb" );
-   Bool exists = (tmp != NULL);
-   if (tmp != NULL) fclose ( tmp );
-   return exists;
+   return (access(name, R_OK) == 0) ;
 }
 
 
@@ -1401,7 +1398,7 @@ void uncompress ( Char *name )
          break;
 
       case SM_F2O:
-         inStr = fopen ( inName, "rb" );
+         inStr = fopen ( inName, "rbm" );
          outStr = stdout;
          if ( inStr == NULL ) {
             fprintf ( stderr, "%s: Can't open input file %s:%s.\n",
@@ -1413,7 +1410,7 @@ void uncompress ( Char *name )
          break;
 
       case SM_F2F:
-         inStr = fopen ( inName, "rb" );
+         inStr = fopen ( inName, "rbm" );
          outStr = fopen_output_safely ( outName, "wb" );
          if ( outStr == NULL) {
             fprintf ( stderr, "%s: Can't create output file %s: %s.\n",
